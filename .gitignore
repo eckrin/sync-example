@@ -39,3 +39,5 @@ out/
 ### JRebel ###
 **/.DS_Store
 **/rebel.xml
+**/test.env
+**/application.yml
