@@ -32,7 +32,7 @@ class StockServiceTest {
 
     @BeforeEach
     public void init() {
-        stockRepository.saveAndFlush(new Stock(1L, 100L));
+        stockRepository.saveAndFlush(new Stock(1L, 1L, 100L));
     }
 
     @AfterEach

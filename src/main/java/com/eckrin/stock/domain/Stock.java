@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Stock {
 
-    @Id @GeneratedValue
+    @Id
     private Long id;
 
     private Long productId;
@@ -19,6 +19,12 @@ public class Stock {
     private Long version;
 
     public Stock(Long productId, Long quantity) {
+        this.productId = productId;
+        this.quantity = quantity;
+    }
+
+    public Stock(Long id, Long productId, Long quantity) {
+        this.id = id;
         this.productId = productId;
         this.quantity = quantity;
     }
