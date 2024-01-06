@@ -13,8 +13,16 @@ public class StockService {
 
     private final StockRepository stockRepository;
 
-//    @Transactional
-    public synchronized void decrease(Long id, Long quantity) {
+    public synchronized void decreaseWithoutTransactional(Long id, Long quantity) {
+        // Stock 조회, 재고 감소후 갱신값 저장
+        Stock stock = stockRepository.findById(id).orElseThrow();
+        stock.decrease(quantity);
+
+        stockRepository.saveAndFlush(stock);
+    }
+
+    @Transactional
+    public void decreaseWithTransactional(Long id, Long quantity) {
         // Stock 조회, 재고 감소후 갱신값 저장
         Stock stock = stockRepository.findById(id).orElseThrow();
         stock.decrease(quantity);

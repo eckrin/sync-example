@@ -13,7 +13,7 @@ public class TransactionStockServiceProxy {
     public void decrease(Long id, Long quantity) {
         startTransaction();
 
-        stockService.decrease(id, quantity);
+        stockService.decreaseWithoutTransactional(id, quantity);
 
         endTransaction();
     }
