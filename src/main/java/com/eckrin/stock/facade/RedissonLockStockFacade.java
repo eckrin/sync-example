@@ -1,0 +1,37 @@
+package com.eckrin.stock.facade;
+
+import com.eckrin.stock.repository.RedisLockRepository;
+import com.eckrin.stock.service.StockService;
+import lombok.RequiredArgsConstructor;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
+import org.springframework.stereotype.Component;
+
+import java.util.concurrent.TimeUnit;
+
+@Component
+@RequiredArgsConstructor
+public class RedissonLockStockFacade {
+
+    private final RedissonClient redissonClient;
+    private final StockService stockService;
+
+    public void decrease(Long id, Long quantity) throws InterruptedException {
+        RLock lock = redissonClient.getLock(id.toString());
+
+        try {
+            boolean available = lock.tryLock(10, 1, TimeUnit.SECONDS);
+
+            if(!available) {
+                System.out.println("lock 획득 실패");
+                return;
+            }
+
+            stockService.decreaseWithTx(id, quantity);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        } finally {
+            lock.unlock();
+        }
+    }
+}
