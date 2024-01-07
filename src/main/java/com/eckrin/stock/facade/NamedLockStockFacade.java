@@ -17,7 +17,7 @@ public class NamedLockStockFacade {
     public void decrease(Long id, Long quantity) {
         try {
             lockRepository.getLock(id.toString()); // 네임드 락 얻어오기
-            stockService.decreaseInNamedLock(id, quantity);
+            stockService.decreaseWithTx(id, quantity); // Requires_new로 하지 않으면 무한루프
         } finally {
             lockRepository.releaseLock(id.toString()); // 네임드 락 해제
         }

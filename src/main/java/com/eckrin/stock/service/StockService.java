@@ -13,7 +13,7 @@ public class StockService {
 
     private final StockRepository stockRepository;
 
-    public synchronized void decreaseWithoutTransactional(Long id, Long quantity) {
+    public synchronized void decreaseWithoutTx(Long id, Long quantity) {
         // Stock 조회, 재고 감소후 갱신값 저장
         Stock stock = stockRepository.findById(id).orElseThrow();
         stock.decrease(quantity);
@@ -22,7 +22,7 @@ public class StockService {
     }
 
     @Transactional
-    public void decreaseWithTransactional(Long id, Long quantity) {
+    public void decreaseWithTx(Long id, Long quantity) {
         // Stock 조회, 재고 감소후 갱신값 저장
         Stock stock = stockRepository.findById(id).orElseThrow();
         stock.decrease(quantity);
@@ -30,8 +30,8 @@ public class StockService {
         stockRepository.saveAndFlush(stock);
     }
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void decreaseInNamedLock(Long id, Long quantity) {
+    @Transactional(propagation = Propagation.REQUIRES_NEW) // 부모 트랜잭션과 별도 Datasource 사용
+    public void decreaseWithTxRequiresNew(Long id, Long quantity) {
         Stock stock = stockRepository.findById(id).orElseThrow();
         stock.decrease(quantity);
 
