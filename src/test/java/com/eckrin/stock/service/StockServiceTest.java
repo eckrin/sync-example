@@ -51,6 +51,54 @@ class StockServiceTest {
     }
 
     @Test
+    @DisplayName("트랜잭션 고립 수준 변경")
+    public void 동시요청_고립수준_isolation() throws InterruptedException {
+        int threadCount = 100;
+        // 쓰레드 32개를 관리하는 쓰레드 풀 객체 생성
+        ExecutorService executorService = Executors.newFixedThreadPool(32);
+        CountDownLatch latch = new CountDownLatch(threadCount);
+
+        for(int i=0; i<threadCount; i++) {
+            executorService.submit(() -> {
+                try {
+                    stockService.decreaseWithSerializable(1L, 1L);
+                } finally {
+                    latch.countDown(); // 각 쓰레드의 작업 종료를 명시한다.
+                }
+            });
+        }
+
+        latch.await(); // 메인쓰레드는 latch의 count가 0이 되기를 기다린다.
+
+        Stock stock = stockRepository.findById(1L).orElseThrow();
+        Assertions.assertThat(stock.getQuantity()).isEqualTo(0); // race condition으로 인하여 원하는 결과가 나오지 않음
+    }
+
+    @Test
+    @DisplayName("트랜잭션 고립 수준 변경 + 재시도")
+    public void 동시요청_고립수준_isolationWithRetry() throws InterruptedException {
+        int threadCount = 100;
+        // 쓰레드 32개를 관리하는 쓰레드 풀 객체 생성
+        ExecutorService executorService = Executors.newFixedThreadPool(32);
+        CountDownLatch latch = new CountDownLatch(threadCount);
+
+        for(int i=0; i<threadCount; i++) {
+            executorService.submit(() -> {
+                try {
+                    stockService.decreaseWithRetry(1L, 1L);
+                } finally {
+                    latch.countDown(); // 각 쓰레드의 작업 종료를 명시한다.
+                }
+            });
+        }
+
+        latch.await(); // 메인쓰레드는 latch의 count가 0이 되기를 기다린다.
+
+        Stock stock = stockRepository.findById(1L).orElseThrow();
+        Assertions.assertThat(stock.getQuantity()).isEqualTo(0); // race condition으로 인하여 원하는 결과가 나오지 않음
+    }
+
+    @Test
     @DisplayName("synchronized 사용 (@Transactional 제거)")
     public void 동시요청_트랜잭션_제거_synchronized() throws InterruptedException {
         int threadCount = 100;
